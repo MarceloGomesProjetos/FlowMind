@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  tasks     Task[]
+  executions Execution[]
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  assignee    String?
+  dueText     String?
+  status      String   @default("PENDING")
+  noteId      String
+  note        Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Execution {
+  id        String   @id @default(cuid())
+  status    String   @default("RUNNING")
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  events    ExecutionEvent[]
+}
+
+model ExecutionEvent {
+  id          String   @id @default(cuid())
+  executionId String
+  execution   Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  sequence    Int
+  stage       String
+  message     String
+  status      String
+  durationMs  Int?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@unique([executionId, sequence])
+  @@index([executionId, sequence])
+}

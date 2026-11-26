@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: flowmind-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Floripa@2001
+      POSTGRES_DB: flowmind
+    ports:
+      - "5432:5432"
+    volumes:
+      - flowmind_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flowmind"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  flowmind_pgdata:
