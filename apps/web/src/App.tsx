@@ -18,7 +18,9 @@ import {
 } from "lucide-react";
 import { ObservabilityGraph } from "./ObservabilityGraph";
 
-const API = "http://localhost:4000/api";
+// @ts-ignore - declarations globais para módulos CSS ainda não estão configuradas
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+
 type EventItem = {
   id: string;
   sequence: number;
