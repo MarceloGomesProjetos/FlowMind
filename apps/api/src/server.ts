@@ -9,7 +9,13 @@ const app = express();
 const prisma = new PrismaClient();
 const port = Number(process.env.API_PORT || 4000);
 
-app.use(cors({ origin: process.env.WEB_ORIGIN || "http://localhost:5173" }));
+const allowedOrigins = (
+  process.env.WEB_ORIGIN || "http://localhost:5173,http://localhost:5174"
+)
+  .split(",")
+  .map((o) => o.trim().replace(/\/+$/, ""));
+
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/health", async (_req, res) => {
