@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
+type AiConfig = { baseUrl?: string; apiKey?: string; model?: string };
 type ExtractedTask = { title: string; description?: string; assignee?: string; dueText?: string };
 
 async function fetchWithRetry(url: string, options: RequestInit, retries = 2): Promise<Response> {
@@ -28,10 +29,10 @@ function extractLocalFallback(content: string): { tasks: ExtractedTask[]; provid
   return { tasks, provider: "Fallback local (sem IA externa)" };
 }
 
-async function extractTasks(content: string): Promise<{ tasks: ExtractedTask[]; provider: string }> {
-  const baseUrl = process.env.AI_BASE_URL;
-  const apiKey = process.env.AI_API_KEY;
-  const model = process.env.AI_MODEL;
+async function extractTasks(content: string, ai?: AiConfig): Promise<{ tasks: ExtractedTask[]; provider: string }> {
+  const baseUrl = ai?.baseUrl ?? process.env.AI_BASE_URL;
+  const apiKey = ai?.apiKey ?? process.env.AI_API_KEY;
+  const model = ai?.model ?? process.env.AI_MODEL;
 
   if (baseUrl && apiKey && model) {
     const response = await fetchWithRetry(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
@@ -61,7 +62,13 @@ async function extractTasks(content: string): Promise<{ tasks: ExtractedTask[]; 
   return extractLocalFallback(content);
 }
 
-export async function processNote(prisma: PrismaClient, noteId: string, executionId: string, content: string) {
+export async function processNote(
+  prisma: PrismaClient,
+  noteId: string,
+  executionId: string,
+  content: string,
+  ai?: AiConfig
+) {
   let sequence = 0;
   const emit = async (stage: string, message: string, status: string, durationMs?: number, metadata?: object) => {
     await prisma.executionEvent.create({

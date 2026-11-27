@@ -11,7 +11,8 @@
     "dev:api": "npm --workspace apps/api run dev",
     "dev:web": "npm --workspace apps/web run dev",
     "db:push": "npm --workspace apps/api run db:push",
-    "build": "npm run build --workspace apps/api && npm run build --workspace apps/web"
+    "build": "npm run build --workspace apps/api && npm run build --workspace apps/web",
+    "deploy": "npm run build && npx wrangler deploy --config apps/api/wrangler.jsonc && npx wrangler deploy --config apps/web/wrangler.jsonc"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
